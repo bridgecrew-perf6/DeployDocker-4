@@ -1,0 +1,45 @@
+FROM ubuntu:20.04
+USER root
+ARG DEBIAN_FRONTEND=noninteractive
+# Set bash as default to source file
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+RUN apt-get -y update && apt-get install -y \
+    curl \
+    vim
+
+ENV NVM_VERSION=v0.39.0
+ENV APP12_NODE_VERSION=v12.22.8
+ENV APP14_NODE_VERSION=v14.18.2 
+
+# Install nvm
+RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/${NVM_VERSION}/install.sh | bash
+ENV NVM_DIR=/root/.nvm
+# - Install node ver v12
+RUN source $NVM_DIR/nvm.sh && nvm install $APP12_NODE_VERSION
+# - Install node ver v14
+RUN source /root/.nvm/nvm.sh && nvm install $APP14_NODE_VERSION && nvm use $APP14_NODE_VERSION
+# - Set default version when using npm in dockerfile -> RUN ...
+ENV PATH=/root/.nvm/versions/node/$APP14_NODE_VERSION/bin:$PATH
+# -> node will use v14 because we use v14 in PATH
+RUN node -v 
+RUN npm install -g pm2
+
+# --- Install app ---
+COPY app12 /app/app12
+WORKDIR /app/app12
+RUN source $NVM_DIR/nvm.sh && nvm use $APP12_NODE_VERSION
+RUN npm install
+EXPOSE 5000
+
+COPY app14 /app/app14
+WORKDIR /app/app14
+RUN source $NVM_DIR/nvm.sh && nvm use $APP14_NODE_VERSION
+RUN npm install
+EXPOSE 3000
+# --- End to install APP ---
+
+COPY scripts /app/scripts
+WORKDIR /app
+COPY start.sh ./start.sh
+RUN chmod +x ./start.sh
+CMD ["./start.sh"]
