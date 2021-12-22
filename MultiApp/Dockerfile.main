@@ -1,7 +1,6 @@
 FROM ubuntu:20.04
 USER root
 ARG DEBIAN_FRONTEND=noninteractive
-# Set bash as default to source file
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 RUN apt-get -y update && apt-get install -y \
     curl \
@@ -17,9 +16,9 @@ ENV NVM_DIR=/root/.nvm
 # - Install node ver v12
 RUN source $NVM_DIR/nvm.sh && nvm install $APP12_NODE_VERSION
 # - Install node ver v14
-RUN source /root/.nvm/nvm.sh && nvm install $APP14_NODE_VERSION && nvm use $APP14_NODE_VERSION
+RUN source $NVM_DIR/nvm.sh && nvm install $APP14_NODE_VERSION && nvm use $APP14_NODE_VERSION
 # - Set default version when using npm in dockerfile -> RUN ...
-ENV PATH=/root/.nvm/versions/node/$APP14_NODE_VERSION/bin:$PATH
+ENV PATH=$NVM_DIR/versions/node/$APP14_NODE_VERSION/bin:$PATH
 # -> node will use v14 because we use v14 in PATH
 RUN node -v 
 RUN npm install -g pm2

@@ -1,1 +1,1 @@
-docker build -f Dockerfile.main -t run_apps .
+docker build -f Dockerfile.main -t multi_app .
