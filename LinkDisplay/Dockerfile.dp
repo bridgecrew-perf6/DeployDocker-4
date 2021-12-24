@@ -1,0 +1,23 @@
+FROM ubuntu:20.04
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+RUN apt-get -y update
+RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install tzdata
+RUN apt-get install -y \
+    apt-utils \
+    curl \
+    build-essential \
+    lsb-release \
+    wget \
+    libjansson-dev \
+    vim \
+    lsof && apt-get update
+
+RUN sed -i 's|http://jp.archive.|http://archive.|g' /etc/apt/sources.list
+RUN sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-stable.list'
+RUN wget https://packages.osrfoundation.org/gazebo.key -O - | apt-key add -
+RUN apt-get update
+RUN apt-get install -y gazebo11 libgazebo11-dev libyaml-cpp-dev
+RUN apt-get -y upgrade
+EXPOSE 11345/tcp
+
+CMD ["gazebo"]
